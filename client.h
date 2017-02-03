@@ -179,7 +179,7 @@ protected:
         }
         cout << "received input: " << input;
 
-        rapidjson::Document *json;
+        rapidjson::Document *json = new rapidjson::Document();
         json->Parse(input.c_str());
         Command *cmd = new Command(json);
 
