@@ -14,12 +14,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include "rapidjson/document.h"
 #include "cflie/CCrazyflie.h"
 
 using namespace std;
 using namespace rapidjson;
+using namespace std::chrono;
 
 class Command {
 private:
@@ -101,9 +103,7 @@ public:
     }
 
     void run() {
-        cout << "about to run create()" << endl;
         create();
-        cout << "about to run listenForData()" << endl;
         listenForData();
     }
 
@@ -187,17 +187,25 @@ protected:
     }
 
     bool handleCommand(Command *cmd) {
+        system_clock::time_point currentTime = system_clock::now();
+        double currentAccZ = this->flie->accZ();
+        double diffAccZ = currentAccZ - this->lastAccZ;
+        double currentThrust = this->flie->thrust();
 
         if (cmd->Stop()) {
             this->flie->setThrust(0);
+            this->lastTime = currentTime;
+            this->lastAccZ = currentAccZ;
             return true;
         }
 
         if (cmd->Squeeze()) {
-            this->flie->setThrust(0);
             // hover...
+            double loopTime = duration_cast<milliseconds>(currentTime - this->lastTime).count();
+            double velZ = diffAccZ * loopTime;
+            this->flie->setThrust(currentThrust + 1000*velZ);
         } else {
-            this->flie->setThrust(15000);
+            this->flie->setThrust(45000);
         }
 
         switch (cmd->Turn()) {
@@ -224,6 +232,8 @@ protected:
                 break;
         }
 
+        this->lastTime = currentTime;
+        this->lastAccZ = currentAccZ;
         return false;
 
     }
@@ -233,6 +243,9 @@ protected:
     int buflen;
     char *buf;
     CCrazyflie *flie;
+
+    system_clock::time_point lastTime;
+    double lastAccZ;
 
 };
 
