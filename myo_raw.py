@@ -1,3 +1,9 @@
+"""
+modified from github.com/dzhu/myo-raw.py
+(deleted some functions and added squeeze_handler, acc_handler)
+
+"""
+
 from __future__ import print_function
 
 import enum
