@@ -14,7 +14,7 @@ $(EXE): client.o $(INCLUDE_OBJ)
 	$(CXX) $< $(INCLUDE_OBJ) $(LDFLAGS) -o $@
 
 client.o: client.cpp $(INCLUDE_CPP)
-	$(CXX) $(CXXFLAGS) $< $(INCLUDE_CPP) -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 obj/%.o: $(INCLUDE_CPP)
 	g++ $(CXXFLAGS) -c -o $@ $(INCLUDE_CPP)
