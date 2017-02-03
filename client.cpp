@@ -9,15 +9,15 @@ int main() {
 
     if (radio->startRadio()) {
         CCrazyflie *flie = new CCrazyflie(radio);
-        flie->setSendPoints(true);
+        flie->setSendSetpoints(true);
 
-        Client client = Client(flie);
-        client.run();
+        Client *client = new Client(flie);
+        client->run();
         delete flie;
     } else {
         std::cerr << "Failed to connect to dongle; check connection" << std::endl;
     }
 
     delete radio;
-
+    return 0;
 }

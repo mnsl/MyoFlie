@@ -10,7 +10,7 @@ all: $(EXE)
 $(EXE): client.o
 	$(CXX) $< $(LDFLAGS) -o $@
 
-Lesson1/main.o: client.cpp
+client.o: client.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:

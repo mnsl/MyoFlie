@@ -19,9 +19,57 @@
 #include "cflie/CCrazyflie.h"
 
 using namespace std;
+using namespace rapidjson;
 
 class Command {
+private:
+    int turnDir = 3;
+    int tiltDir = 3;
+    bool shouldStop = false;
+    bool squeeze = false;
 public:
+    Command(Document* input) {
+        // parse json if valid
+        if (input->IsObject()) {
+            if (input->HasMember("stop")) {
+                this->shouldStop = (*input)["stop"].GetBool();
+            }
+            if (input->HasMember("squeeze")) {
+                this->squeeze = (*input)["squeeze"].GetBool();
+            }
+            if (input->HasMember("acc")) {
+                // tilt
+                int pitch = (*input)["acc"][0].GetInt();
+                if (abs(pitch) < 200) {
+                    this->tiltDir = this->CENTER;
+                } else if ( pitch > 0 ) {
+                    this->tiltDir = this->UP;
+                } else {
+                    this->tiltDir = this->DOWN;
+                }
+                // turn
+                int roll = (*input)["acc"][2].GetInt();
+                if (abs(roll) < 400) {
+                    this->turnDir = this->CENTER;
+                } else if ( roll > 0 ) {
+                    this->turnDir = this->RIGHT;
+                } else {
+                    this->turnDir = this->LEFT;
+                }
+            }
+        }
+    }
+
+    ~Command() {
+        // do nothing
+    }
+    const static int CENTER = 0;
+    const static int RIGHT = 1;
+    const static int LEFT = 2;
+    const static int UP = 1;
+    const static int DOWN = 2;
+    const static int NO_CHANGE = 3;
+
     int Turn() {
         return this->turnDir;
     }
@@ -35,84 +83,14 @@ public:
         return this->shouldStop;
     } 
 
-    const int CENTER = 0;
-    const int RIGHT = 1;
-    const int LEFT = 2;
-    const int UP = 1;
-    const int DOWN = 2;
-    const int NO_CHANGE = 3;
-
-    Command(rapidjson::Document input) {
-        // parse json if valid
-        if (input.IsObject()) {
-            if (input.HasMember("stop")) {
-                this->shouldStop = input["stop"].GetBool();
-            }
-            if (input.HasMember("squeeze")) {
-                this->squeeze = input["squeeze"].GetBool();
-            }
-            if (input.HasMember("acc")) {
-                // tilt
-                int pitch = input["acc"][0];
-                if (abs(pitch) < 200) {
-                    this->tiltDir = this->CENTER;
-                else if ( pitch > 0 ) {
-                    this->tiltDir = this->UP;
-                } else {
-                    this->tiltDir = this->DOWN;
-                }
-                // turn
-                int roll = input["acc"][2];
-                if (abs(roll) < 400) {
-                    this->turnDir = CENTER;
-                else if ( roll > 0 ) {
-                    this->turnDir = RIGHT;
-                } else {
-                    this->turnDir = LEFT;
-                }
-            }
-        }
-    }
-
-    ~Command() {
-        // do nothing
-    }
-
-private:
-    int turnDir = this->NO_CHANGE;
-    int tiltDir = this->NO_CHANGE;
-    bool shouldStop = false;
-    bool squeeze = false;
-}
-
-void printOrientation(Accel accel) {
-    if ( abs(accel.x) < 200 ) {
-        cout << "center";
-    } else if (accel.x > 0) {
-        cout << "up";
-    } else {
-        cout << "down";
-    }
-
-    cout << "\t";
-
-    if ( abs(accel.z) < 400 ) {
-        cout << "center";
-    } else if (accel.z > 0) {
-        cout << "right";
-    } else {
-        cout << "left";
-    }
-
-    cout << endl;
-}
+};
 
 class Client {
 private:
     const char* socketName = "./uds_socket";
 
 public:
-    Client(CCrazyfile *flie) {
+    Client(CCrazyflie *flie) {
         this->buflen = 1024;
         this->buf = new char[buflen+1];
         this->flie = flie;
@@ -201,8 +179,8 @@ protected:
         }
         cout << "received input: " << input;
 
-        rapidjson::Document json;
-        json.Parse(input.c_str());
+        rapidjson::Document *json;
+        json->Parse(input.c_str());
         Command *cmd = new Command(json);
 
         return handleCommand(cmd);
@@ -210,7 +188,7 @@ protected:
 
     bool handleCommand(Command *cmd) {
 
-        if (cmd->ShouldStop()) {
+        if (cmd->Stop()) {
             this->flie->setThrust(0);
             return true;
         }
@@ -223,31 +201,27 @@ protected:
         }
 
         switch (cmd->Turn()) {
-            case RIGHT:
+            case Command::RIGHT:
                 this->flie->setRoll(20);
                 break;
-            case LEFT:
+            case Command::LEFT:
                 this->flie->setRoll(-20);
                 break;
-            case CENTER:
+            case Command::CENTER:
                 this->flie->setRoll(0);
                 break;
-            case NO_CHANGE:
-            default:
         }
 
         switch (cmd->Tilt()) {
-            case UP:
+            case Command::UP:
                 this->flie->setPitch(15);
                 break;
-            case DOWN:
+            case Command::DOWN:
                 this->flie->setPitch(-15);
                 break;
-            case CENTER:
+            case Command::CENTER:
                 this->flie->setPitch(0);
                 break;
-            case NO_CHANGE:
-            default:
         }
 
         return false;
