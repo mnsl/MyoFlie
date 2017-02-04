@@ -50,9 +50,9 @@ int main(int argc, char **argv) {
   int nReturnvalue = 0;
   int nThrust = 10001;
 
-  std::string strRadioURI = "radio://0/10/250K";
+  std::string strRadioURI = "radio://0/80/250K";
 
-  std::cout << "Opening radio URI '" << strRadioURI << "'" << std::endl;
+  std::cout << "Opening radio URI '" << strRadioURI <<                                               "'" << std::endl;
   CCrazyRadio *crRadio = new CCrazyRadio(strRadioURI);
 
   g_bGoon = true;

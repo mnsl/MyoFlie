@@ -36,7 +36,7 @@ public:
             if (input->HasMember("stop")) {
                 this->shouldStop = (*input)["stop"].GetBool();
             }
-            if (input->HasMember("squeeze")) {
+	    if (input->HasMember("squeeze")) {
                 this->squeeze = (*input)["squeeze"].GetBool();
             }
             if (input->HasMember("acc")) {
@@ -128,13 +128,14 @@ protected:
 
     void listenForData() {
         while ( this->flie->cycle() ) {
+	  std::cout << "in while loop" << std::endl;
             bool stop = getCommand();
             if (stop) {
                 break;
             } 
             closeSocket();
         }
-
+	std::cout << "fly cycle returned false" << std::endl;
     }
 
     void closeSocket() {
@@ -179,7 +180,7 @@ protected:
         }
         cout << "received input: " << input;
 
-        rapidjson::Document *json;
+        rapidjson::Document *json = new rapidjson::Document();
         json->Parse(input.c_str());
         Command *cmd = new Command(json);
 

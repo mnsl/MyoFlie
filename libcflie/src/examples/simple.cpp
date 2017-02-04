@@ -37,7 +37,7 @@
 
 
 int main(int argc, char **argv) {
-  CCrazyRadio *crRadio = new CCrazyRadio("radio://0/10/250K");
+  CCrazyRadio *crRadio = new CCrazyRadio("radio://0/80/250K");
 
   if(crRadio->startRadio()) {
     CCrazyflie *cflieCopter = new CCrazyflie(crRadio);
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     // stop updating the internal controller setpoints and instead
     // sending dummy packets (to keep the connection alive).
     cflieCopter->setSendSetpoints(true);
-
+D
     while(cflieCopter->cycle()) {
       // Main loop. Currently empty.
 

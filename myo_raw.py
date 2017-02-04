@@ -15,6 +15,7 @@ import time
 
 import serial
 from serial.tools.list_ports import comports
+from serial import SerialException
 
 from common import *
 from myo_server import *
@@ -433,7 +434,13 @@ if __name__ == '__main__':
     last_vals = None
 
     m = MyoRaw(sys.argv[1] if len(sys.argv) >= 2 else None)
-    m.connect()
+
+    try:
+        m.connect()
+    except SerialException as s:
+        print("exception: ")
+        print(s)
+        
     server = Server()
 
     def squeeze_handler(emg, moving, times=[]):
