@@ -127,14 +127,23 @@ protected:
     }
 
     void listenForData() {
-        while ( this->flie->cycle() ) {
-            bool stop = getCommand();
-            if (stop) {
-                break;
-            } 
-            closeSocket();
+        if (this->flie) {
+            while ( this->flie->cycle() ) {
+                bool stop = getCommand();
+                if (stop) {
+                    break;
+                } 
+                closeSocket();
+            }
+        } else {
+            while (true) {
+                bool stop = getCommand();
+                if (stop) {
+                    break;
+                } 
+                closeSocket();
+            }
         }
-
     }
 
     void closeSocket() {
@@ -187,54 +196,58 @@ protected:
     }
 
     bool handleCommand(Command *cmd) {
-        system_clock::time_point currentTime = system_clock::now();
-        double currentAccZ = this->flie->accZ();
-        double diffAccZ = currentAccZ - this->lastAccZ;
-        double currentThrust = this->flie->thrust();
+        if ( this->flie ) {
+            system_clock::time_point currentTime = system_clock::now();
+            double currentAccZ = this->flie->accZ();
+            double diffAccZ = currentAccZ - this->lastAccZ;
+            double currentThrust = this->flie->thrust();
 
-        if (cmd->Stop()) {
-            this->flie->setThrust(0);
+            if (cmd->Stop()) {
+                this->flie->setThrust(0);
+                this->lastTime = currentTime;
+                this->lastAccZ = currentAccZ;
+                return true;
+            }
+
+            if (cmd->Squeeze()) {
+                // hover...
+                double loopTime = duration_cast<milliseconds>(currentTime - this->lastTime).count();
+                double velZ = diffAccZ * loopTime;
+                this->flie->setThrust(currentThrust + 1000*velZ);
+            } else {
+                this->flie->setThrust(45000);
+            }
+
+            switch (cmd->Turn()) {
+                case Command::RIGHT:
+                    this->flie->setRoll(20);
+                    break;
+                case Command::LEFT:
+                    this->flie->setRoll(-20);
+                    break;
+                case Command::CENTER:
+                    this->flie->setRoll(0);
+                    break;
+            }
+
+            switch (cmd->Tilt()) {
+                case Command::UP:
+                    this->flie->setPitch(15);
+                    break;
+                case Command::DOWN:
+                    this->flie->setPitch(-15);
+                    break;
+                case Command::CENTER:
+                    this->flie->setPitch(0);
+                    break;
+            }
+
             this->lastTime = currentTime;
             this->lastAccZ = currentAccZ;
-            return true;
-        }
-
-        if (cmd->Squeeze()) {
-            // hover...
-            double loopTime = duration_cast<milliseconds>(currentTime - this->lastTime).count();
-            double velZ = diffAccZ * loopTime;
-            this->flie->setThrust(currentThrust + 1000*velZ);
+            return false;
         } else {
-            this->flie->setThrust(45000);
+            return cmd->Stop();
         }
-
-        switch (cmd->Turn()) {
-            case Command::RIGHT:
-                this->flie->setRoll(20);
-                break;
-            case Command::LEFT:
-                this->flie->setRoll(-20);
-                break;
-            case Command::CENTER:
-                this->flie->setRoll(0);
-                break;
-        }
-
-        switch (cmd->Tilt()) {
-            case Command::UP:
-                this->flie->setPitch(15);
-                break;
-            case Command::DOWN:
-                this->flie->setPitch(-15);
-                break;
-            case Command::CENTER:
-                this->flie->setPitch(0);
-                break;
-        }
-
-        this->lastTime = currentTime;
-        this->lastAccZ = currentAccZ;
-        return false;
 
     }
 

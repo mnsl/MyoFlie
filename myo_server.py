@@ -25,6 +25,7 @@ class Server:
         self.sock.listen(1)
 
     def send_data(self, data):
+        print >>sys.stderr, 'data:', data
         try:
             if self.connection is None:
                 print >>sys.stderr, 'waiting for a connection'

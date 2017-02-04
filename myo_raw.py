@@ -305,12 +305,14 @@ class MyoRaw(object):
                 ## something
                 emg = vals[:8]
                 moving = vals[8]
+                print("emg msg")
                 self.on_emg(emg, moving)
             elif attr == 0x1c:
                 vals = unpack('10h', pay)
                 quat = vals[:4]
                 acc = vals[4:7]
                 gyro = vals[7:10]
+                print("imu msg")
                 self.on_imu(quat, acc, gyro)
             elif attr == 0x23:
                 try:
@@ -437,11 +439,10 @@ if __name__ == '__main__':
     server = Server()
 
     def squeeze_handler(emg, moving, times=[]):
-        if (sum(emg) > 2000):
-            data = json.dumps({"emg": emg, "squeezing": True})
-            data += '\n'
-            server.send_data(data)
-            print('squeezing')
+        squeezing = True if sum(emg) > 4000 else False
+        data = json.dumps({"emg": emg, "squeezing": squeezing})
+        data += '\n'
+        server.send_data(data)
 
     m.add_emg_handler(squeeze_handler)
 
@@ -473,7 +474,7 @@ if __name__ == '__main__':
         data += '\n'
         server.send_data(data)
 
-    #m.add_imu_handler(acc_handler)
+    m.add_imu_handler(acc_handler)
 
     try:
         while True:
