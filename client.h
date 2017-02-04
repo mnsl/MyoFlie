@@ -36,7 +36,7 @@ public:
             if (input->HasMember("stop")) {
                 this->shouldStop = (*input)["stop"].GetBool();
             }
-            if (input->HasMember("squeeze")) {
+	    if (input->HasMember("squeeze")) {
                 this->squeeze = (*input)["squeeze"].GetBool();
             }
             if (input->HasMember("acc")) {

@@ -5,7 +5,7 @@
 
 int main() {
 
-    CCrazyRadio *radio = new CCrazyRadio("radio://0/10/250K");
+    CCrazyRadio *radio = new CCrazyRadio("radio://0/80/250K");
 
     if (radio->startRadio()) {
         CCrazyflie *flie = new CCrazyflie(radio);
