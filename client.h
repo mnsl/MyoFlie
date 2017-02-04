@@ -186,7 +186,7 @@ protected:
             }
             input.append(buf, amountRead);
         }
-        cout << "received input: " << input;
+        //cout << "received input: " << input;
 
         rapidjson::Document *json = new rapidjson::Document();
         json->Parse(input.c_str());
@@ -214,6 +214,7 @@ protected:
                 double loopTime = duration_cast<milliseconds>(currentTime - this->lastTime).count();
                 double velZ = diffAccZ * loopTime;
                 this->flie->setThrust(currentThrust + 1000*velZ);
+                cout << "squeeze" << endl;
             } else {
                 this->flie->setThrust(45000);
             }
@@ -221,24 +222,31 @@ protected:
             switch (cmd->Turn()) {
                 case Command::RIGHT:
                     this->flie->setRoll(20);
+                    cout << "right" << endl;
                     break;
                 case Command::LEFT:
                     this->flie->setRoll(-20);
+                    cout << "left" << endl;
                     break;
                 case Command::CENTER:
                     this->flie->setRoll(0);
+                    cout << "roll center" << endl;
                     break;
             }
 
             switch (cmd->Tilt()) {
                 case Command::UP:
                     this->flie->setPitch(15);
+                    cout << "up" << endl;
                     break;
                 case Command::DOWN:
                     this->flie->setPitch(-15);
+                    cout << "down" << endl;
                     break;
                 case Command::CENTER:
                     this->flie->setPitch(0);
+                    cout << "tilt center" << endl;
+
                     break;
             }
 
@@ -247,6 +255,7 @@ protected:
             return false;
         } else {
             return cmd->Stop();
+            cout << "stop" << endl;
         }
 
     }
